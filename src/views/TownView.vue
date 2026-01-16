@@ -138,10 +138,6 @@ const closeMission = () => { soundStore.playSe('cancel'); showLevelSelect.value 
               <p>ダンジョンで拾うアイテムには「呪い」がかかっていることがあります。呪われたアイテムは持っているだけで悪影響を及ぼしますが、「DOJO」で師匠にお金を払えば浄化（アイテム化）できます。</p>
             </section>
             
-            <section>
-              <h3>6. アプリとして遊ぶ (PWA)</h3>
-              <p>ブラウザのメニューから<span class="highlight">「ホーム画面に追加」</span>または「アプリをインストール」を選ぶことで、このゲームをアプリとしてインストールできます。フルスクリーンで没入感のあるプレイが可能です。</p>
-            </section>
           </div>
 
           <div v-else class="manual-en">
@@ -171,10 +167,6 @@ const closeMission = () => { soundStore.playSe('cancel'); showLevelSelect.value 
               <p>Some items found in dungeons are "Cursed". They may have negative effects. Visit the "DOJO" to pay the Master to cleanse them.</p>
             </section>
 
-            <section>
-              <h3>6. APP MODE (PWA)</h3>
-              <p>You can install this game as an App by selecting <span class="highlight">"Add to Home Screen"</span> from your browser menu. This allows for full-screen, offline-capable gameplay.</p>
-            </section>
           </div>
         </div>
 
