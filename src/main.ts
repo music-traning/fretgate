@@ -2,12 +2,13 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import './assets/main.css' // CSSがあれば
 
-// ▼ 追加: Vercel Analytics のインポート
+// ▼ エラーの原因だったこの行を削除しました
+// import './assets/main.css'
+
 import { inject } from '@vercel/analytics'
 
-// ▼ 追加: アナリティクスの初期化
+// 本番環境でのみ計測（開発中はカウントされない設定）
 inject()
 
 const app = createApp(App)
