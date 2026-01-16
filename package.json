@@ -1,0 +1,26 @@
+{
+  "name": "fretgate",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "vite-plugin-pwa": "^1.2.0"
+  },
+  "dependencies": {
+    "@tonejs/midi": "^2.0.28",
+    "@vueuse/core": "^14.1.0",
+    "pinia": "^3.0.4",
+    "sass": "^1.97.2",
+    "tone": "^15.1.22",
+    "vue-router": "^4.6.4"
+  }
+}

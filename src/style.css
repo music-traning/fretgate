@@ -1,0 +1,51 @@
+/* src/style.css */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+:root {
+  /* サイバーパンク・パレット */
+  --bg-color: #050505;       /* ほぼ漆黒 */
+  --grid-color: #001100;     /* 暗い緑 */
+  --neon-green: #0aff0a;     /* ターミナルグリーン */
+  --neon-pink: #ff0055;      /* エラー/警告 */
+  --neon-cyan: #00f0ff;      /* 情報/リンク */
+  --text-glow: 0 0 10px rgba(10, 255, 10, 0.7); /* 発光エフェクト */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--neon-green);
+  font-family: 'VT323', monospace; /* 80s端末風フォント */
+  font-size: 18px;
+  overflow: hidden;
+  text-shadow: var(--text-glow); /* 常時発光 */
+}
+
+/* CRTモニター風の走査線オーバーレイ */
+body::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.06),
+    rgba(0, 255, 0, 0.02),
+    rgba(0, 0, 255, 0.06)
+  );
+  background-size: 100% 4px, 6px 100%; /* ラインの細かさ */
+  pointer-events: none; /* クリックを邪魔しないように */
+  z-index: 9999;
+}
+
+button {
+  font-family: 'VT323', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
