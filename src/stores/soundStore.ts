@@ -15,33 +15,38 @@ export const useSoundStore = defineStore('sound', () => {
 
   const BGM_LIST: Record<string, string> = {
     opening: '/theme.mid', 
-    // ending: '/ending.mid',
   };
 
   /**
-   * オーディオ初期化 (iPhone/PWA用・絶対止まらない版)
+   * 【重要】ユーザー操作(Click/Touch)の直後に必ず呼ぶ関数
+   * iPhoneのオーディオコンテキストを強制的に「再開」させる
    */
-  async function initAudio() {
-    console.log('[SoundStore] initAudio: Start');
-
-    // ▼ 1. まずコンテキストの蘇生を試みる (エラーは握りつぶす)
+  async function checkAndResume() {
     try {
       if (Tone.context.state !== 'running') {
-        console.log('[SoundStore] Context is suspended. Trying to resume...');
+        console.log('[SoundStore] Force Resuming Context...');
         await Tone.start();
         console.log('[SoundStore] Context Resumed!');
       }
     } catch (e) {
-      console.warn('[SoundStore] Resume Failed (Silent Mode):', e);
-      // ここで throw しない！失敗しても先に進む！
+      console.warn('[SoundStore] Resume failed:', e);
     }
+  }
 
-    // ▼ 2. すでにシンセがあるならここで終了 (再生成しない)
+  /**
+   * オーディオ初期化
+   */
+  async function initAudio() {
+    console.log('[SoundStore] initAudio Start');
+    
+    // ここでも念のためResumeを呼ぶ
+    await checkAndResume();
+
     if (isReady.value && bgmSynth) {
+      console.log('[SoundStore] Already Ready');
       return;
     }
 
-    // ▼ 3. シンセ生成 (ここでのエラーも握りつぶす)
     try {
       console.log('[SoundStore] Creating Synths...');
       
@@ -67,33 +72,39 @@ export const useSoundStore = defineStore('sound', () => {
       });
 
       isReady.value = true;
-      console.log('[SoundStore] Init Success.');
+      console.log('[SoundStore] Init Success');
 
     } catch (e) {
-      console.error('[SoundStore] Synth Creation Failed:', e);
-      // アラートは出さず、コンソールのみにする
-      // isReady は false のままになるが、関数は正常終了させる
+      console.error('[SoundStore] Init Failed:', e);
     }
   }
 
   function playGuitarNote(stringNum: number, fretNum: number) {
-    // 準備できてなければ何もしない（エラーにしない）
     if (!isReady.value || isMuted.value || !guitarSynth) return;
-    
     try {
       const OPEN_STRINGS = [0, 64, 59, 55, 50, 45, 40]; 
       const baseNote = OPEN_STRINGS[stringNum];
       const midiNote = baseNote + fretNum;
       const noteName = Tone.Frequency(midiNote, "midi").toNote();
-      guitarSynth.triggerAttackRelease(noteName, "8n");
+      
+      // 発音の前にコンテキストが死んでないか確認する保険
+      if (Tone.context.state !== 'running') {
+        Tone.context.resume().then(() => {
+            guitarSynth?.triggerAttackRelease(noteName, "8n");
+        });
+      } else {
+        guitarSynth.triggerAttackRelease(noteName, "8n");
+      }
     } catch (e) {
-      console.warn('Guitar Play Error:', e);
+      console.warn('Guitar Error:', e);
     }
   }
 
   function playSe(type: 'decision' | 'cancel' | 'coin' | 'damage' | 'clear') {
     if (!isReady.value || isMuted.value || !seSynth) return;
     try {
+      if (Tone.context.state !== 'running') Tone.context.resume();
+      
       switch (type) {
         case 'decision': seSynth.triggerAttackRelease("C6", "32n"); break;
         case 'cancel': seSynth.triggerAttackRelease("G4", "32n"); break;
@@ -101,9 +112,7 @@ export const useSoundStore = defineStore('sound', () => {
         case 'damage': seSynth.triggerAttackRelease(["C2", "F#2"], "8n"); break;
         case 'clear': seSynth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n"); break;
       }
-    } catch (e) {
-      console.warn('SE Play Error:', e);
-    }
+    } catch (e) { console.warn('SE Error:', e); }
   }
 
   async function playBgm(key: string) {
@@ -112,15 +121,13 @@ export const useSoundStore = defineStore('sound', () => {
     
     try {
       stopBgm();
-      
-      // ここでもし initAudio が失敗していても、try-catch で守られているので止まらない
       if (!isReady.value) await initAudio();
 
       const url = BGM_LIST[key];
       if (!url) return;
 
       const response = await fetch(url);
-      if (!response.ok) return; // 読み込めなければ静かに終了
+      if (!response.ok) return;
       const arrayBuffer = await response.arrayBuffer();
       const midi = new Midi(arrayBuffer);
 
@@ -133,7 +140,6 @@ export const useSoundStore = defineStore('sound', () => {
       midi.tracks.forEach(track => {
         track.notes.forEach(note => {
           Tone.Transport.schedule((time) => {
-            // ここでシンセが死んでいてもエラーで止まらないようにオプショナルチェーン使用
             bgmSynth?.triggerAttackRelease(note.name, note.duration, time, note.velocity);
           }, note.time);
         });
@@ -143,10 +149,8 @@ export const useSoundStore = defineStore('sound', () => {
       Tone.Transport.loopEnd = midi.duration;
       Tone.Transport.start();
       currentBgmKey.value = key;
-
     } catch (e) {
-      console.error('[SoundStore] BGM Play Error:', e);
-      // BGM再生に失敗しても、ゲーム進行は止めない！
+      console.error('[SoundStore] BGM Error:', e);
     }
   }
 
@@ -156,13 +160,12 @@ export const useSoundStore = defineStore('sound', () => {
       Tone.Transport.cancel();
       if (bgmSynth) bgmSynth.releaseAll();
       currentBgmKey.value = null;
-    } catch (e) {
-      console.warn('Stop BGM Error:', e);
-    }
+    } catch (e) {}
   }
 
   return {
     isReady, isMuted,
+    checkAndResume, // これを追加
     initAudio, playBgm, stopBgm, playGuitarNote, playSe
   };
 });
