@@ -44,6 +44,13 @@ const skipToTown = () => {
   soundStore.stopBgm();
   router.push('/town');
 };
+
+const requestReset = () => {
+  if (confirm('【SYSTEM WARNING】\nセーブデータを完全に削除しますか？\n(This will delete all progress.)')) {
+    localStorage.clear();
+    location.reload();
+  }
+};
 </script>
 <template>
   <div class="opening-container">
@@ -54,7 +61,11 @@ const skipToTown = () => {
         <div v-else class="blink-text">>> CLICK TO START <<</div>
         <p class="warning-text">※音が出ます / SOUND ON</p>
       </div>
-      <footer class="copyright"><a href="https://note.com/jazzy_begin" target="_blank" @click.stop>©2026 buro</a></footer>
+      <footer class="copyright">
+        <a href="https://note.com/jazzy_begin" target="_blank" @click.stop>©2026 buro</a>
+        <span class="separator">/</span>
+        <button class="reset-link" @click.stop="requestReset">SYSTEM RESET</button>
+      </footer>
     </div>
 
     <div v-else class="story-screen">
@@ -90,6 +101,8 @@ const skipToTown = () => {
 <style lang="scss" scoped>
 .opening-container { width: 100vw; height: 100vh; background: #000; color: #fff; overflow: hidden; position: relative; font-family: 'DotGothic16', sans-serif; }
 .copyright { position: absolute; bottom: 15px; width: 100%; text-align: center; z-index: 2000; pointer-events: none; a { pointer-events: auto; color: #666; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; letter-spacing: 1px; &:hover { color: #fff; text-decoration: underline; } } }
+.separator { margin: 0 10px; color: #444; }
+.reset-link { pointer-events: auto; background: none; border: none; font-family: sans-serif; font-size: 0.7rem; color: #444; cursor: pointer; letter-spacing: 1px; &:hover { color: #f00; text-decoration: underline; } }
 .start-overlay { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #000; z-index: 2000; cursor: pointer; position: relative; }
 .center-content { text-align: center; }
 .title-text { font-family: 'VT323', monospace; font-size: 5rem; color: var(--neon-green); text-shadow: 0 0 20px var(--neon-green); margin-bottom: 30px; }

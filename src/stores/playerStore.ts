@@ -20,10 +20,12 @@ export const usePlayerStore = defineStore('player', () => {
     jCoin: 1000,
     inventory: [] as number[],
     // WIZシステム: 店の在庫IDリスト（初期はID 1〜5のみ）
-    shopStock: [1, 2, 3, 4, 5] as number[], 
+    shopStock: [1, 2, 3, 4, 5] as number[],
     currentStage: 1,
     maxStageReached: 1,
     deathCount: 0,
+    // ▼ 追加: 難易度
+    difficulty: 'NORMAL' as 'EASY' | 'NORMAL' | 'HARD',
   });
 
   const torch = ref(100);
@@ -50,7 +52,7 @@ export const usePlayerStore = defineStore('player', () => {
   function sellItem(index: number, item: Item) {
     state.value.inventory.splice(index, 1);
     state.value.jCoin += item.sell_price;
-    
+
     // 在庫になければ追加
     if (!state.value.shopStock.includes(item.id)) {
       state.value.shopStock.push(item.id);
@@ -76,13 +78,13 @@ export const usePlayerStore = defineStore('player', () => {
 
     // 簡易ロジック: ID 1~10 は回復
     if (itemId <= 10) {
-       if (torch.value >= maxTorch.value) return 'イマハ　ヒツヨウナイ (満タン)';
-       torch.value = Math.min(torch.value + 30, maxTorch.value);
-       message = '回復シタ (TORCH +30)';
-       consumed = true;
+      if (torch.value >= maxTorch.value) return 'イマハ　ヒツヨウナイ (満タン)';
+      torch.value = Math.min(torch.value + 30, maxTorch.value);
+      message = '回復シタ (TORCH +30)';
+      consumed = true;
     } else {
-       message = 'ツカイカタガ　ワカラナイ……';
-       consumed = false;
+      message = 'ツカイカタガ　ワカラナイ……';
+      consumed = false;
     }
 
     if (consumed) {
@@ -127,10 +129,10 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   // 全てをexport
-  return { 
-    state, torch, maxTorch, 
-    getItemDetail, buyItem, sellItem, addCoin, die, consumeItem, 
-    generateDropItem, obtainItem, removeCurse, unlockNextStage, 
-    allItems: itemsData 
+  return {
+    state, torch, maxTorch,
+    getItemDetail, buyItem, sellItem, addCoin, die, consumeItem,
+    generateDropItem, obtainItem, removeCurse, unlockNextStage,
+    allItems: itemsData
   };
 });

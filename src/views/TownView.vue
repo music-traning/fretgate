@@ -78,6 +78,13 @@ const resetSaveData = () => {
     <div v-if="showLevelSelect" class="modal-overlay" @click.self="closeMission">
       <div class="modal-window">
         <h2>>> SELECT MISSION</h2>
+        
+        <div class="difficulty-select">
+          <button :class="{ active: store.state.difficulty === 'EASY' }" @click="store.state.difficulty = 'EASY'">BEGINNER</button>
+          <button :class="{ active: store.state.difficulty === 'NORMAL' }" @click="store.state.difficulty = 'NORMAL'">STANDARD</button>
+          <button :class="{ active: store.state.difficulty === 'HARD' }" @click="store.state.difficulty = 'HARD'">ADVANCED</button>
+        </div>
+
         <ul class="stage-list">
           <li v-for="stage in STAGES" :key="stage.id" 
               :class="{ locked: store.state.maxStageReached < stage.id }"
@@ -116,7 +123,7 @@ const resetSaveData = () => {
               <p>正解するとRUSHモードへ。同じ弦を使わずに連続正解するとコンボボーナスが入ります。</p>
             </section>
             <section>
-<<<<<<< HEAD
+
               <h3>4. 経済とWIZシステム</h3>
               <p>手に入れたアイテムは「JAZZ CAFE」で売ることができます。あなたが売ったアイテムは、その後<span class="highlight">店の在庫として店頭に並びます。</span>レアなアイテムを誤って売ってしまっても、お金さえあれば買い戻せます。</p>
             </section>
@@ -125,12 +132,6 @@ const resetSaveData = () => {
               <h3>5. 呪いと道場</h3>
               <p>ダンジョンで拾うアイテムには「呪い」がかかっていることがあります。呪われたアイテムは持っているだけで悪影響を及ぼしますが、「DOJO」で師匠にお金を払えば浄化（アイテム化）できます。</p>
             </section>
-            
-=======
-              <h3>4. WIZシステム & 呪い</h3>
-              <p>売ったアイテムは店に並びます。呪われたアイテムはDOJOで浄化してください。</p>
-            </section>
->>>>>>> db7cb1135c0cec4dab2e106abc7db1ab96718537
           </div>
           <div v-else class="manual-en">
             <section>
@@ -146,7 +147,7 @@ const resetSaveData = () => {
               <p>Don't hit the same string twice in a row during RUSH mode to get combo bonuses.</p>
             </section>
             <section>
-<<<<<<< HEAD
+
               <h3>4. ECONOMY (WIZ SYSTEM)</h3>
               <p>You can sell items at the "JAZZ CAFE". Items you sell will be added to the <span class="highlight">Shop's Inventory</span>. You can buy them back later if you have enough J-Coins.</p>
             </section>
@@ -155,12 +156,6 @@ const resetSaveData = () => {
               <h3>5. CURSES & THE DOJO</h3>
               <p>Some items found in dungeons are "Cursed". They may have negative effects. Visit the "DOJO" to pay the Master to cleanse them.</p>
             </section>
-
-=======
-              <h3>4. ECONOMY & CURSE</h3>
-              <p>Sold items appear in the shop. Cleanse cursed items at the DOJO.</p>
-            </section>
->>>>>>> db7cb1135c0cec4dab2e106abc7db1ab96718537
           </div>
 
           <div class="danger-zone">
@@ -197,4 +192,7 @@ section { margin-bottom: 20px; h3 { color: var(--neon-green); border-left: 4px s
 .danger-zone { margin-top: 30px; border: 1px solid #f00; padding: 10px; text-align: center; }
 .danger-zone h3 { color: #f00; border: none; padding: 0; margin-bottom: 10px; }
 .reset-btn { background: #500; color: #fff; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; &:hover { background: #f00; } }
+.difficulty-select { display: flex; gap: 5px; margin-bottom: 15px; }
+.difficulty-select button { flex: 1; background: #111; border: 1px solid #444; color: #666; padding: 8px; cursor: pointer; font-family: inherit; font-size: 0.9rem; &:hover { color: #fff; } }
+.difficulty-select button.active { border-color: var(--neon-green); color: var(--neon-green); background: rgba(0, 50, 0, 0.5); }
 </style>

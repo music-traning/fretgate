@@ -3,8 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-// ▼ エラーの原因だったこの行を削除しました
-// import './assets/main.css'
+import './style.css'
 
 import { inject } from '@vercel/analytics'
 
