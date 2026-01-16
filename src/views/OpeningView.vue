@@ -14,20 +14,21 @@ const initializeAndStart = async () => {
   if (isLoading.value) return; 
   isLoading.value = true;
 
-  // ▼▼▼ ここが最重要！クリックされた瞬間にオーディオを起こす ▼▼▼
-  await soundStore.checkAndResume(); 
+  // ▼▼▼ 修正: 強制アンロック（待たない！） ▼▼▼
+  soundStore.unlockAudio(); 
 
   try {
     console.log("Audio initializing...");
     await soundStore.initAudio();
     
-    console.log("Play BGM...");
-    await soundStore.playBgm('opening');
+    // BGM再生
+    soundStore.playBgm('opening'); // awaitしない（詰まり防止）
 
     isStarted.value = true;
+
   } catch (e) {
     console.error("Start Error:", e);
-    // エラーでも進む
+    // エラーでも絶対にゲームを開始させる
     isStarted.value = true;
   } finally {
     isLoading.value = false;
@@ -47,7 +48,6 @@ const skipToTown = () => {
   router.push('/town');
 };
 </script>
-
 <template>
   <div class="opening-container">
     <div v-if="!isStarted" class="start-overlay" @click="initializeAndStart">
@@ -59,6 +59,7 @@ const skipToTown = () => {
       </div>
       <footer class="copyright"><a href="https://note.com/jazzy_begin" target="_blank" @click.stop>©2026 buro</a></footer>
     </div>
+
     <div v-else class="story-screen">
       <button class="skip-btn" @click="skipToTown">>> SKIP</button>
       <div v-if="showFlash" class="flash-overlay"></div>
@@ -90,7 +91,6 @@ const skipToTown = () => {
 </template>
 
 <style lang="scss" scoped>
-/* スタイルは前回と同じなので省略せず記載します */
 .opening-container { width: 100vw; height: 100vh; background: #000; color: #fff; overflow: hidden; position: relative; font-family: 'DotGothic16', sans-serif; }
 .copyright { position: absolute; bottom: 15px; width: 100%; text-align: center; z-index: 2000; pointer-events: none; a { pointer-events: auto; color: #666; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; letter-spacing: 1px; &:hover { color: #fff; text-decoration: underline; } } }
 .start-overlay { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #000; z-index: 2000; cursor: pointer; position: relative; }

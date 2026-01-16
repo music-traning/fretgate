@@ -8,7 +8,6 @@ export const useSoundStore = defineStore('sound', () => {
   const isMuted = ref(false);
   const currentBgmKey = ref<string | null>(null);
 
-  // 音源ノード
   let bgmSynth: Tone.PolySynth | null = null;
   let guitarSynth: Tone.PolySynth | null = null;
   let seSynth: Tone.PolySynth | null = null;
@@ -18,18 +17,35 @@ export const useSoundStore = defineStore('sound', () => {
   };
 
   /**
-   * 【重要】ユーザー操作(Click/Touch)の直後に必ず呼ぶ関数
-   * iPhoneのオーディオコンテキストを強制的に「再開」させる
+   * 【最終奥義】iOS PWA用の強制アンロック処理
+   * Tone.jsを経由せず、Raw Contextで無音バッファを再生してこじ開ける
    */
-  async function checkAndResume() {
+  function unlockAudio() {
     try {
-      if (Tone.context.state !== 'running') {
-        console.log('[SoundStore] Force Resuming Context...');
-        await Tone.start();
-        console.log('[SoundStore] Context Resumed!');
+      // 生のAudioContextを取得
+      const ctx = Tone.context.rawContext as AudioContext;
+      
+      // 1. 無音のバッファを作成 (0.1秒)
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      
+      // 2. 出力先に繋いで再生
+      source.connect(ctx.destination);
+      if (source.start) {
+        source.start(0);
+      } else if ((source as any).noteOn) {
+        (source as any).noteOn(0); // 古いiOS互換
       }
+
+      // 3. 念押しでResume
+      if (ctx.state !== 'running') {
+        ctx.resume();
+      }
+      
+      console.log('[SoundStore] Audio Unlocked via Silent Buffer');
     } catch (e) {
-      console.warn('[SoundStore] Resume failed:', e);
+      console.warn('[SoundStore] Unlock failed:', e);
     }
   }
 
@@ -37,19 +53,13 @@ export const useSoundStore = defineStore('sound', () => {
    * オーディオ初期化
    */
   async function initAudio() {
-    console.log('[SoundStore] initAudio Start');
-    
-    // ここでも念のためResumeを呼ぶ
-    await checkAndResume();
-
-    if (isReady.value && bgmSynth) {
-      console.log('[SoundStore] Already Ready');
-      return;
-    }
+    if (isReady.value && bgmSynth) return;
 
     try {
-      console.log('[SoundStore] Creating Synths...');
-      
+      // 初期化時にもアンロックを試みる
+      unlockAudio();
+      await Tone.start();
+
       bgmSynth = new Tone.PolySynth(Tone.Synth).toDestination();
       bgmSynth.volume.value = -12;
       bgmSynth.set({
@@ -73,7 +83,6 @@ export const useSoundStore = defineStore('sound', () => {
 
       isReady.value = true;
       console.log('[SoundStore] Init Success');
-
     } catch (e) {
       console.error('[SoundStore] Init Failed:', e);
     }
@@ -81,21 +90,21 @@ export const useSoundStore = defineStore('sound', () => {
 
   function playGuitarNote(stringNum: number, fretNum: number) {
     if (!isReady.value || isMuted.value || !guitarSynth) return;
+    
+    // ここで resume() を待つとラグの原因になるので、Fire & Forgetにする
     try {
+      if (Tone.context.state !== 'running') {
+        Tone.context.resume(); // 待たない
+      }
+      
       const OPEN_STRINGS = [0, 64, 59, 55, 50, 45, 40]; 
       const baseNote = OPEN_STRINGS[stringNum];
       const midiNote = baseNote + fretNum;
       const noteName = Tone.Frequency(midiNote, "midi").toNote();
       
-      // 発音の前にコンテキストが死んでないか確認する保険
-      if (Tone.context.state !== 'running') {
-        Tone.context.resume().then(() => {
-            guitarSynth?.triggerAttackRelease(noteName, "8n");
-        });
-      } else {
-        guitarSynth.triggerAttackRelease(noteName, "8n");
-      }
+      guitarSynth.triggerAttackRelease(noteName, "8n");
     } catch (e) {
+      // エラーが出てもゲーム進行は止めない
       console.warn('Guitar Error:', e);
     }
   }
@@ -104,7 +113,7 @@ export const useSoundStore = defineStore('sound', () => {
     if (!isReady.value || isMuted.value || !seSynth) return;
     try {
       if (Tone.context.state !== 'running') Tone.context.resume();
-      
+
       switch (type) {
         case 'decision': seSynth.triggerAttackRelease("C6", "32n"); break;
         case 'cancel': seSynth.triggerAttackRelease("G4", "32n"); break;
@@ -120,6 +129,9 @@ export const useSoundStore = defineStore('sound', () => {
     if (currentBgmKey.value === key) return;
     
     try {
+      // アンロック実行
+      unlockAudio();
+      
       stopBgm();
       if (!isReady.value) await initAudio();
 
@@ -165,7 +177,7 @@ export const useSoundStore = defineStore('sound', () => {
 
   return {
     isReady, isMuted,
-    checkAndResume, // これを追加
+    unlockAudio, // ← これを公開
     initAudio, playBgm, stopBgm, playGuitarNote, playSe
   };
 });

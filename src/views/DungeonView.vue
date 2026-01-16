@@ -61,8 +61,6 @@ const nextQuestion = () => {
 
 const onFretClick = (stringNum: number, fretNum: number) => {
 
-  soundStore.checkAndResume();
-  
   soundStore.playGuitarNote(stringNum, fretNum);
 
   if (!isRunning.value || isGameOver.value || isStageClear.value) return;
