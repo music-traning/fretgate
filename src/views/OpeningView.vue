@@ -5,8 +5,6 @@ import { useSoundStore } from '@/stores/soundStore';
 
 const router = useRouter();
 const soundStore = useSoundStore();
-
-// 状態管理
 const isStarted = ref(false); 
 const isLoading = ref(false);
 const showLogo = ref(false); 
@@ -17,6 +15,7 @@ const initializeAndStart = async () => {
   isLoading.value = true;
 
   try {
+    // 標準的な初期化に戻す
     console.log("Audio initializing...");
     await soundStore.initAudio();
     
@@ -24,18 +23,16 @@ const initializeAndStart = async () => {
     await soundStore.playBgm('opening');
 
     isStarted.value = true;
-
   } catch (e) {
     console.error("Audio Start Error:", e);
-    alert("オーディオの起動に失敗しました。");
+    // エラーが出てもゲームは進める（無音プレイ用）
+    isStarted.value = true;
   } finally {
     isLoading.value = false;
   }
 };
 
-const onCrawlEnd = () => {
-  triggerLogo();
-};
+const onCrawlEnd = () => { triggerLogo(); };
 
 const triggerLogo = () => {
   showFlash.value = true;
@@ -43,14 +40,11 @@ const triggerLogo = () => {
   showLogo.value = true;
 };
 
-// 街へ移動（修正箇所）
 const skipToTown = () => {
-  // ▼ 画面遷移の前に、確実に音楽を止める！
   soundStore.stopBgm();
   router.push('/town');
 };
 </script>
-
 <template>
   <div class="opening-container">
     <div v-if="!isStarted" class="start-overlay" @click="initializeAndStart">
@@ -60,78 +54,40 @@ const skipToTown = () => {
         <div v-else class="blink-text">>> CLICK TO START <<</div>
         <p class="warning-text">※音が出ます / SOUND ON</p>
       </div>
-      <footer class="copyright">
-        <a href="https://note.com/jazzy_begin" target="_blank" @click.stop>
-          ©2026 buro
-        </a>
-      </footer>
+      <footer class="copyright"><a href="https://note.com/jazzy_begin" target="_blank" @click.stop>©2026 buro</a></footer>
     </div>
 
     <div v-else class="story-screen">
       <button class="skip-btn" @click="skipToTown">>> SKIP</button>
       <div v-if="showFlash" class="flash-overlay"></div>
-
       <div v-if="!showLogo" class="crawl-container">
         <div class="crawl-content" @animationend="onCrawlEnd">
           <p>ときに　せいれき　2030ねん……。</p>
-          <br>
-          <p>AGI（シンギュラリティー）の　とうらいにより</p>
-          <p>じんるいは　ろうどうから　かいほうされた。</p>
-          <br>
-          <p>すべての　にんげんが　ゲイジュツを　あいし</p>
-          <p>うたを　うたい　えを　かく　じだい。</p>
-          <br>
-          <p>だが　ここに　ひとり……</p>
-          <p>ぜつぼうの　ふちに　いる　オトコがいた。</p>
-          <br>
-          <p>かれは　ギタリスト。</p>
-          <p>しかし　かれは　しらなかった。</p>
-          <p>指板（フレットボード）の　おとが</p>
-          <p>どこにあるのかを。</p>
-          <br>
-          <p>「タブふが　なければ　なにも　ひけない」</p>
-          <br>
-          <p>まわりは　みな　てんさい　ばかり。</p>
-          <p>かれの　おとは　だれにも　とどかない。</p>
-          <br>
-          <p>かれには　ゆめが　あった。</p>
-          <p>「6げんの　まじゅつし」に　なること。</p>
-          <p>じゆうに　ソロを　かなでる　こと。</p>
-          <br>
-          <p>あるひ　かれは　きいた。</p>
-          <p>まちの　はずれに　AIが　つくったという</p>
-          <p>「5つの　まじょう（Fretgate）」の　うわさを。</p>
-          <br>
-          <p>そこは　ひとの　こころを　おる　ちごく。</p>
-          <p>いどんだ　ものは　みな　ぎがを　うしない</p>
-          <p>はいじんと　なって　かえってくるという。</p>
-          <br>
-          <p>それでも　オトコは　ギターを　せおった。</p>
-          <p>ピック　ひとつを　にぎりしめ</p>
-          <p>だれも　いかない　アレチへと　むかう。</p>
-          <br>
-          <p>これは　ひとりの　ギタリストの</p>
-          <p>こどくな　たたかいの　きろく　である……。</p>
+          <br><p>AGI（シンギュラリティー）の　とうらいにより</p><p>じんるいは　ろうどうから　かいほうされた。</p>
+          <br><p>すべての　にんげんが　ゲイジュツを　あいし</p><p>うたを　うたい　えを　かく　じだい。</p>
+          <br><p>だが　ここに　ひとり……</p><p>ぜつぼうの　ふちに　いる　オトコがいた。</p>
+          <br><p>かれは　ギタリスト。</p><p>しかし　かれは　しらなかった。</p><p>指板（フレットボード）の　おとが</p><p>どこにあるのかを。</p>
+          <br><p>「タブふが　なければ　なにも　ひけない」</p>
+          <br><p>まわりは　みな　てんさい　ばかり。</p><p>かれの　おとは　だれにも　とどかない。</p>
+          <br><p>かれには　ゆめが　あった。</p><p>「6げんの　まじゅつし」に　なること。</p><p>じゆうに　ソロを　かなでる　こと。</p>
+          <br><p>あるひ　かれは　きいた。</p><p>まちの　はずれに　AIが　つくったという</p><p>「5つの　まじょう（Fretgate）」の　うわさを。</p>
+          <br><p>そこは　ひとの　こころを　おる　ちごく。</p><p>いどんだ　ものは　みな　ぎがを　うしない</p><p>はいじんと　なって　かえってくるという。</p>
+          <br><p>それでも　オトコは　ギターを　せおった。</p><p>ピック　ひとつを　にぎりしめ</p><p>だれも　いかない　アレチへと　むかう。</p>
+          <br><p>これは　ひとりの　ギタリストの</p><p>こどくな　たたかいの　きろく　である……。</p>
           <div class="spacer"></div>
         </div>
       </div>
-
       <div v-else class="title-screen" @click="skipToTown">
         <h1 class="main-logo">FRETGATE</h1>
         <p class="sub-title">- The 6-String Magician -</p>
         <p class="press-start">CLICK TO TOWN</p>
-        <footer class="copyright">
-          <a href="https://note.com/jazzy_begin" target="_blank" @click.stop>
-            ©2026 buro
-          </a>
-        </footer>
+        <footer class="copyright"><a href="https://note.com/jazzy_begin" target="_blank" @click.stop>©2026 buro</a></footer>
       </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-/* スタイルは前回と同じですが、一応記載します */
 .opening-container { width: 100vw; height: 100vh; background: #000; color: #fff; overflow: hidden; position: relative; font-family: 'DotGothic16', sans-serif; }
 .copyright { position: absolute; bottom: 15px; width: 100%; text-align: center; z-index: 2000; pointer-events: none; a { pointer-events: auto; color: #666; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; letter-spacing: 1px; &:hover { color: #fff; text-decoration: underline; } } }
 .start-overlay { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #000; z-index: 2000; cursor: pointer; position: relative; }
