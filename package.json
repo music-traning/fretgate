@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@tonejs/midi": "^2.0.28",
+    "@vercel/analytics": "^1.6.1",
     "@vueuse/core": "^14.1.0",
     "pinia": "^3.0.4",
     "sass": "^1.97.2",
