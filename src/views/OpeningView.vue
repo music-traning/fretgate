@@ -10,29 +10,19 @@ const isLoading = ref(false);
 const showLogo = ref(false); 
 const showFlash = ref(false); 
 
-const initializeAndStart = async () => {
+const initializeAndStart = () => {
   if (isLoading.value) return; 
   isLoading.value = true;
 
-  // ▼▼▼ 修正: 強制アンロック（待たない！） ▼▼▼
+  // ▼ オーディオ処理は「裏で勝手にやっててね」と投げるだけ（awaitしない）
+  // 成功すれば音が鳴るし、失敗すれば無音になるだけ。ゲームは止まらない。
   soundStore.unlockAudio(); 
+  soundStore.initAudio();
+  soundStore.playBgm('opening');
 
-  try {
-    console.log("Audio initializing...");
-    await soundStore.initAudio();
-    
-    // BGM再生
-    soundStore.playBgm('opening'); // awaitしない（詰まり防止）
-
-    isStarted.value = true;
-
-  } catch (e) {
-    console.error("Start Error:", e);
-    // エラーでも絶対にゲームを開始させる
-    isStarted.value = true;
-  } finally {
-    isLoading.value = false;
-  }
+  // ▼ 読み込み完了を待たずに、即座にスタートフラグを立てる！
+  isStarted.value = true;
+  isLoading.value = false;
 };
 
 const onCrawlEnd = () => { triggerLogo(); };
