@@ -7,12 +7,11 @@ const router = useRouter();
 const soundStore = useSoundStore();
 
 // 状態管理
-const isStarted = ref(false); // スタートボタンを押したか
-const isLoading = ref(false); // ロード中か
-const showLogo = ref(false);  // ロゴ表示フェーズか
-const showFlash = ref(false); // フラッシュ演出
+const isStarted = ref(false); 
+const isLoading = ref(false);
+const showLogo = ref(false); 
+const showFlash = ref(false); 
 
-// 1. ユーザーが画面をクリックした時に呼ばれる関数
 const initializeAndStart = async () => {
   if (isLoading.value) return; 
   isLoading.value = true;
@@ -44,15 +43,16 @@ const triggerLogo = () => {
   showLogo.value = true;
 };
 
-// 街へ移動
+// 街へ移動（修正箇所）
 const skipToTown = () => {
+  // ▼ 画面遷移の前に、確実に音楽を止める！
+  soundStore.stopBgm();
   router.push('/town');
 };
 </script>
 
 <template>
   <div class="opening-container">
-    
     <div v-if="!isStarted" class="start-overlay" @click="initializeAndStart">
       <div class="center-content">
         <h1 class="title-text">FRETGATE</h1>
@@ -60,7 +60,6 @@ const skipToTown = () => {
         <div v-else class="blink-text">>> CLICK TO START <<</div>
         <p class="warning-text">※音が出ます / SOUND ON</p>
       </div>
-
       <footer class="copyright">
         <a href="https://note.com/jazzy_begin" target="_blank" @click.stop>
           ©2026 buro
@@ -121,7 +120,6 @@ const skipToTown = () => {
         <h1 class="main-logo">FRETGATE</h1>
         <p class="sub-title">- The 6-String Magician -</p>
         <p class="press-start">CLICK TO TOWN</p>
-
         <footer class="copyright">
           <a href="https://note.com/jazzy_begin" target="_blank" @click.stop>
             ©2026 buro
@@ -129,84 +127,32 @@ const skipToTown = () => {
         </footer>
       </div>
     </div>
-
   </div>
 </template>
 
 <style lang="scss" scoped>
-.opening-container {
-  width: 100vw; height: 100vh;
-  background: #000; color: #fff;
-  overflow: hidden; position: relative;
-  font-family: 'DotGothic16', sans-serif;
-}
-
-/* フッター用スタイル */
-.copyright {
-  position: absolute; bottom: 15px; width: 100%; text-align: center;
-  z-index: 2000; pointer-events: none; /* 周りはクリック透過 */
-  a {
-    pointer-events: auto; /* リンクはクリック可能 */
-    color: #666; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; letter-spacing: 1px;
-    &:hover { color: #fff; text-decoration: underline; }
-  }
-}
-
-/* スタート画面 */
-.start-overlay {
-  width: 100%; height: 100%;
-  display: flex; justify-content: center; align-items: center;
-  background: #000; z-index: 2000; cursor: pointer;
-  position: relative; /* フッター配置用 */
-}
+/* スタイルは前回と同じですが、一応記載します */
+.opening-container { width: 100vw; height: 100vh; background: #000; color: #fff; overflow: hidden; position: relative; font-family: 'DotGothic16', sans-serif; }
+.copyright { position: absolute; bottom: 15px; width: 100%; text-align: center; z-index: 2000; pointer-events: none; a { pointer-events: auto; color: #666; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; letter-spacing: 1px; &:hover { color: #fff; text-decoration: underline; } } }
+.start-overlay { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #000; z-index: 2000; cursor: pointer; position: relative; }
 .center-content { text-align: center; }
-.title-text {
-  font-family: 'VT323', monospace; font-size: 5rem;
-  color: var(--neon-green); text-shadow: 0 0 20px var(--neon-green);
-  margin-bottom: 30px;
-}
+.title-text { font-family: 'VT323', monospace; font-size: 5rem; color: var(--neon-green); text-shadow: 0 0 20px var(--neon-green); margin-bottom: 30px; }
 .blink-text { font-size: 1.5rem; animation: blink 1s infinite; }
 .loading-text { font-size: 1.5rem; color: #f0f; }
 .warning-text { margin-top: 20px; font-size: 0.8rem; color: #666; }
-
 .story-screen { width: 100%; height: 100%; position: relative; }
-.skip-btn {
-  position: absolute; top: 20px; right: 20px;
-  background: transparent; color: #666; border: 1px solid #666;
-  padding: 5px 10px; cursor: pointer; z-index: 100;
-  &:hover { color: #fff; border-color: #fff; }
-}
-
+.skip-btn { position: absolute; top: 20px; right: 20px; background: transparent; color: #666; border: 1px solid #666; padding: 5px 10px; cursor: pointer; z-index: 100; &:hover { color: #fff; border-color: #fff; } }
 .crawl-container { width: 100%; height: 100%; display: flex; justify-content: center; perspective: 300px; }
-.crawl-content { 
-  text-align: center; font-size: 1.5rem; line-height: 2; color: #ddd; 
-  position: absolute; top: 100%; 
-  animation: scrollUp 90s linear forwards; 
-  width: 90%; max-width: 800px; 
-}
-@keyframes scrollUp { 
-  0% { top: 100%; opacity: 0; } 5% { opacity: 1; } 90% { opacity: 1; } 100% { top: -500%; opacity: 0; } 
-}
+.crawl-content { text-align: center; font-size: 1.5rem; line-height: 2; color: #ddd; position: absolute; top: 100%; animation: scrollUp 90s linear forwards; width: 90%; max-width: 800px; }
+@keyframes scrollUp { 0% { top: 100%; opacity: 0; } 5% { opacity: 1; } 90% { opacity: 1; } 100% { top: -500%; opacity: 0; } }
 .spacer { height: 50vh; }
-
 .flash-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 999; pointer-events: none; }
-
-.title-screen { 
-  height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; cursor: pointer;
-  position: relative;
-}
+.title-screen { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; cursor: pointer; position: relative; }
 .main-logo { font-family: 'VT323', monospace; font-size: 6rem; margin: 0; color: transparent; -webkit-text-stroke: 2px var(--neon-pink); text-shadow: 4px 4px 0px var(--neon-cyan); letter-spacing: 5px; }
 .sub-title { font-size: 1.5rem; color: var(--neon-green); margin-top: 10px; }
 .press-start { margin-top: 50px; font-size: 1.2rem; animation: blink 1s infinite; }
-
 @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-@media (max-width: 600px) { 
-  .crawl-content { font-size: 1rem; } 
-  .main-logo { font-size: 3.5rem; }
-  .title-text { font-size: 3rem; }
-}
+@media (max-width: 600px) { .crawl-content { font-size: 1rem; } .main-logo { font-size: 3.5rem; } .title-text { font-size: 3rem; } }
 @media (max-height: 500px) { .crawl-content { font-size: 1.1rem; line-height: 1.8; } }
 </style>

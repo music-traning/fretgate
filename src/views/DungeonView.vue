@@ -2,13 +2,13 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore } from '@/stores/playerStore';
-import { useSoundStore } from '@/stores/soundStore'; // 追加
+import { useSoundStore } from '@/stores/soundStore';
 import { useGameLoop } from '@/composables/useGameLoop';
 
 const route = useRoute();
 const router = useRouter();
 const store = usePlayerStore();
-const soundStore = useSoundStore(); // 追加
+const soundStore = useSoundStore();
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const STRING_TUNING = [4, 11, 7, 2, 9, 4];
@@ -60,14 +60,13 @@ const nextQuestion = () => {
 };
 
 const onFretClick = (stringNum: number, fretNum: number) => {
-  // ▼▼▼ 実音再生 ▼▼▼
   soundStore.playGuitarNote(stringNum, fretNum);
 
   if (!isRunning.value || isGameOver.value || isStageClear.value) return;
 
   if (stageId.value === 3 && ![5, 6].includes(stringNum)) {
     logMessage.value = '> WARN: STRING 5/6 ONLY!';
-    soundStore.playSe('cancel'); // 警告音
+    soundStore.playSe('cancel');
     return;
   }
   if (stageId.value === 4 && ![3, 4].includes(stringNum)) {
@@ -82,12 +81,12 @@ const onFretClick = (stringNum: number, fretNum: number) => {
   const clickedNoteName = NOTES[clickedNoteIndex];
 
   if (clickedNoteIndex === currentNoteIndex.value) {
-    soundStore.playSe('decision'); // 正解音
+    soundStore.playSe('decision');
     handleCorrect(stringNum);
   } else {
     answerWrong();
     stopCombo();
-    soundStore.playSe('damage'); // ミス音
+    soundStore.playSe('damage');
     logMessage.value = `> ERROR: [${clickedNoteName}] INVALID.`;
   }
 };
@@ -149,16 +148,14 @@ const handleGameOver = () => {
   store.die();
   isGameOver.value = true;
 };
+
 const handleStageClear = () => {
   stopCombo();
-  soundStore.playSe('clear'); // クリア音
-
+  soundStore.playSe('clear');
+  
   if (stageId.value === 5) {
-    // 少し余韻を持たせてから遷移
-    setTimeout(() => {
-      router.push('/ending');
-    }, 2000);
-    return; // ここで処理終了
+    setTimeout(() => { router.push('/ending'); }, 2000);
+    return;
   }
 
   isStageClear.value = true;
@@ -166,9 +163,8 @@ const handleStageClear = () => {
   const bonus = Math.floor(store.torch);
   store.addCoin(100 + bonus);
   store.unlockNextStage(stageId.value);
-
-  
 };
+
 const { isRunning, startBattle, answerCorrectly, answerWrong } = useGameLoop(handleGameOver);
 
 const useItem = (item: any) => {
@@ -189,10 +185,8 @@ const leaveItemAndLeave = () => {
 const backToTown = () => router.push('/town');
 
 onMounted(async () => {
-  // ▼▼▼ BGM停止 & 音源準備 ▼▼▼
   soundStore.stopBgm();
   await soundStore.initAudio();
-
   nextQuestion();
   startBattle();
 });
@@ -280,7 +274,8 @@ onUnmounted(() => stopCombo());
 
 <style lang="scss" scoped>
 .dungeon-container {
-  height: 100vh; display: flex; flex-direction: column; 
+  height: 100dvh; /* dvhでモバイルのアドレスバー対策 */
+  display: flex; flex-direction: column; 
   background: #000; overflow: hidden;
   &.rush-mode { background: #100010; }
 }
@@ -308,31 +303,73 @@ onUnmounted(() => stopCombo());
 .item-btn { background: #000; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 5px 10px; font-size: 0.8rem; }
 .item-dropdown { position: absolute; top: 70px; right: 5px; background: rgba(0,0,0,0.95); border: 1px solid var(--neon-green); padding: 10px; z-index: 200; min-width: 150px; color: #fff; }
 
+/* ▼▼▼ 指板エリアの修正（PC中央寄せ＆サイズ調整） ▼▼▼ */
 .fretboard-area {
-  flex: 1; display: block; overflow-x: auto; overflow-y: hidden; position: relative; width: 100%;
+  flex: 1; 
+  display: flex;              /* 上下左右中央寄せのためにFlex化 */
+  justify-content: center;    /* 左右中央 */
+  align-items: center;        /* 上下中央 */
+  overflow-x: auto;           /* はみ出たらスクロール */
+  overflow-y: hidden; 
+  position: relative; 
+  width: 100%;
+  padding: 10px;
 }
-.fretboard { display: flex; flex-direction: column; width: max-content; margin: 0; padding-bottom: 10px; }
+
+/* 指板のコンテナ */
+.fretboard { 
+  display: flex; 
+  flex-direction: column; 
+  width: max-content; 
+  margin: 0 auto;             /* 念のための自動マージン */
+}
+
 .string-container { display: flex; align-items: center; }
+
+/* 弦番号 */
 .string-num {
-  width: 30px; height: 40px; display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 40px; 
+  display: flex; align-items: center; justify-content: center;
   color: #fff; font-family: monospace; font-weight: bold;
   position: sticky; left: 0; z-index: 50; background: #222; 
   border-right: 2px solid var(--neon-green); box-shadow: 2px 0 5px rgba(0,0,0,0.5);
 }
 .string-num.highlight { color: #f0f; background: #300; border-color: #f0f; text-shadow: 0 0 5px #f0f; }
+
+/* 弦のライン */
 .string-line { display: flex; height: 40px; border-bottom: 1px solid #222; }
 
-@media (max-height: 700px) { .string-line, .string-num { height: 35px; } .target-note { font-size: 2rem; } }
-
+/* フレット */
 .fret {
-  width: 50px; height: 100%; border-right: 2px solid #444; position: relative; display: flex; align-items: center; justify-content: center;
+  width: 50px; height: 100%; 
+  border-right: 2px solid #444; position: relative; 
+  display: flex; align-items: center; justify-content: center;
   &::before { content: ""; position: absolute; width: 100%; height: 1px; background: #888; top: 50%; pointer-events: none; }
   &:hover { background: rgba(10, 255, 10, 0.1); }
   &.nut { width: 30px; border-right: 4px solid #888; background: rgba(255, 255, 255, 0.05); }
 }
-@media (max-width: 600px) { .fret { width: 45px; } }
+
 .dot { width: 8px; height: 8px; background: #444; border-radius: 50%; z-index: 1; }
 
+/* ▼▼▼ PC用レスポンシブ対応（画面幅1024px以上で巨大化） ▼▼▼ */
+@media (min-width: 1024px) {
+  .string-num { width: 40px; height: 60px; font-size: 1.2rem; }
+  .string-line { height: 60px; }
+  .fret { width: 80px; } /* フレット幅アップ */
+  .fret.nut { width: 40px; }
+  .dot { width: 12px; height: 12px; }
+  
+  /* ターゲット表示も大きく */
+  .target-note { font-size: 4rem; }
+}
+
+/* モバイル横画面調整 */
+@media (max-height: 500px) { 
+  .string-line, .string-num { height: 35px; } 
+  .target-note { font-size: 2rem; } 
+}
+
+/* モーダル類 */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px); }
 .clear-bg { background: rgba(0, 50, 0, 0.9); }
 .danger-bg { background: rgba(50, 0, 0, 0.9); }
